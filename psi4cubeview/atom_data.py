@@ -104,7 +104,6 @@ ATOM_SYMBOL_TO_Z = {
     'Es': 99,
     'Fm': 100
 }
-
 """
     A map from atom symbols to atomic data
 """
