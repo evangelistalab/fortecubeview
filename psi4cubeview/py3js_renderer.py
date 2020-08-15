@@ -1,160 +1,22 @@
-import numpy as np
-import re
-import functools
-import ipywidgets as widgets
-import re
 import math
+import re
 import collections
+import numpy as np
 import skimage.measure
 
 from IPython.display import display
 from pythreejs import *
-
-# project files
 from .atom_data import *
-from .cube_file import *
 
-def plot(path='.',
-         cubes=None,
-         scale=1.0,
-         font_size=16,
-         font_family='Helvetica',
-         width=400,
-         height=400,
-         show_text=True):
-    """
-    A simple widget for viewing cube files. Cube files are authomatically loaded from the current
-    directory. Alternatively, the user can pass a path or a dictionary containing CubeFile objects
+from collections import defaultdict
 
-    Parameters
-    ----------
-    path : str
-        The path used to load cube files (default = '.')
-    cubes : dict
-        A dictionary {'filename.cube' : CubeFile } containing the cube files to be plotted
-    scale : float
-        the scale factor used to make a molecule smaller or bigger (default = 1.0)
-    font_size : int
-        the font size (default = 16)
-    font_family : str
-        the font used to label the orbitals (default = Helvetica)
-    width : int
-        the width of the plot in pixels (default = 400)
-    height : int
-        the height of the plot in pixels (default = 400)
-    show_text : bool
-        show the name of the cube file under the plot? (default = True)
-    """
-
-    if cubes == None:
-        print(f'cube_viewer: loading cube files from the directory {path}')
-        cubes = load_cubes(path)
-
-
-    if len(cubes) == 0:
-        print(f'cube_viewer: no cube files provided. No output will be displayed')
-        return
-    
-    # convert cube file names into human readable text
-    labels_to_filename = {}
-    psi4_mo_label_re = r'Psi_([a|b])_(\d+)_(\d+)-([\w\d\'\"]*)\.cube'
-    psi4_density_label_re = r'D(\w)\.cube'
-    for k in cubes.keys():
-        m1 = re.match(psi4_mo_label_re, k)
-        m2 = re.match(psi4_density_label_re, k)
-        if m1:
-            label = f'MO {int(m1.groups()[1]):3d}{m1.groups()[0]} ({m1.groups()[2]}-{m1.groups()[3]})'
-        elif m2:
-            if m2.groups()[0] == 'a':
-                label = 'Density (alpha)'
-            if m2.groups()[0] == 'b':
-                label = 'Density (beta)'
-            if m2.groups()[0] == 's':
-                label = 'Density (spin)'
-            if m2.groups()[0] == 't':
-                label = 'Density (total)'
-        else:
-            label = k
-        labels_to_filename[label] = k
-        
-    sorted_labels = sorted(labels_to_filename.keys())
-
-    box_layout = widgets.Layout(border='0px solid black',
-                                width=f'{width + 50}px',
-                                height=f'{height + 100}px')
-
-    def f(label, cubes, labels_to_filename):
-        filename = labels_to_filename[label]
-        cube = cubes[filename]
-        renderer = Py3JSRenderer(width=width, height=height)
-        type = 'mo'
-        if label[0] == 'D':
-            type = 'density'
-        renderer.add_cubefile(cube, scale=scale, type=type)
-        style = f'font-size:{font_size}px;font-family:{font_family};font-weight: bold;'
-        mo_label = widgets.HTML(
-            value=f'<div align="center" style="{style}">{label}</div>')
-        file_label = widgets.HTML(
-            value=f'<div align="center">({filename})</div>')
-        display(
-            widgets.VBox([mo_label, renderer.renderer, file_label],
-                         layout=box_layout))
-
-    ws = widgets.Select(options=sorted_labels, description='Cube files:')
-    interactive_widget = widgets.interactive(
-        f,
-        label=ws,
-        cubes=widgets.fixed(cubes),
-        labels_to_filename=widgets.fixed(labels_to_filename))
-    output = interactive_widget.children[-1]
-    output.layout.height = f'{height + 100}px'
-    style = """
-    <style>
-       .jupyter-widgets-output-area .output_scroll {
-            height: unset !important;
-            border-radius: unset !important;
-            -webkit-box-shadow: unset !important;
-            box-shadow: unset !important;
-        }
-        .jupyter-widgets-output-area  {
-            height: auto !important;
-        }
-    </style>
-    """
-    display(widgets.HTML(style))
-    display(interactive_widget)
-
-def load_cubes(path='.'):
-    """
-    Load all the cubefiles (suffix ".cube" ) in a given path
-
-    Parameters
-    ----------
-    path : str
-        The path of the directory that will contain the cube files
-    """
-
-    import os
-    cube_files = {}
-    isdir = os.path.isdir(path) 
-    if isdir:
-        for file in os.listdir(path):
-            if file.endswith('.cube'):
-                cf = CubeFile()
-                cf.load(os.path.join(path, file))
-                cube_files[file] = cf
-        if len(cube_files) == 0:
-            print(f'load_cubes: no cube files found in directory {path}')
-    else:
-        print(f'load_cubes: directory {path} does not exist')
-
-    return cube_files
 
 def rgb2hex(r, g, b):
     r = max(0, min(r, 255))
     g = max(0, min(g, 255))
     b = max(0, min(b, 255))
     return '#%02x%02x%02x' % (r, g, b)
+
 
 def xyz_to_atoms_list(xyz):
     """
@@ -210,6 +72,8 @@ class Py3JSRenderer():
         Add a molecule specified in xyz format
     add_cubefile(cube,type='mo',levels=None,colors=None,colorscheme=None,opacity=1.0,scale=1.0,sumlevel=0.85,add_geom=True,shift_to_com=True)
         Add a cube file
+    add_cubefiles(cubes,type='mo',levels=None,colors=None,colorscheme=None,opacity=1.0,scale=1.0,sumlevel=0.85,add_geom=True,shift_to_com=True)
+        Add a cube file
     add_sphere(self, position, radius, color, opacity=1.0)
         Add a sphere (should not be used to draw molecules)
     add_cylinder(self, xyz1, xyz2, color, radius)
@@ -244,10 +108,20 @@ class Py3JSRenderer():
         self.atom_materials = {}
         self.bond_materials = {}
         self.bond_geometry = None
-
+        # cubefile meshes
+        self.cube_meshes = defaultdict(list)
+        # a list of active cubefile meshes
+        self.active_cube_meshes = []
         # set an initial scene size
         self.camera_width = 10.0
         self.camera_height = self.camera_width / self.aspect
+
+        self._color_schemes = {'national' : ['#e60000', '#0033a0'],
+    'bright':['#ffcc00', '#00bfff'],
+    'electron': ['#ff00bf', '#2eb82e'],
+    'wow':      ['#AC07F2', '#D7F205'],
+    'emory' : ['#f2a900', '#0033a0']}
+
         self.__initialize_pythreejs_renderer()
 
     def display(self):
@@ -262,11 +136,42 @@ class Py3JSRenderer():
         """
         return self.renderer
 
+    def cubes(self):
+        """
+        Return the list of cube
+        """
+        return list(self.cube_meshes.keys())
+
+    def set_active_cubes(self,active_cubes):
+        """
+        Set the active cubes
+        """
+        # let the user pass a string or a list of strings
+        if isinstance(active_cubes,str):
+            active_cubes = [active_cubes]
+
+        # find cubes that must be removed (those plotted not included in the new list)
+        to_remove = set(self.active_cube_meshes).difference(set(active_cubes))
+        to_add = set(active_cubes).difference(set(self.active_cube_meshes))
+        self.active_cube_meshes = active_cubes
+
+        for cube in to_add:
+            if cube in self.cube_meshes:
+                for mesh in self.cube_meshes[cube]:
+                    self.scene.add(mesh)
+        # remove/add
+        for cube in to_remove:
+            if cube in self.cube_meshes:
+                for mesh in self.cube_meshes[cube]: # each cube has multiple meshes
+                    self.scene.remove(mesh)
+
+
     def show_molecule(self,wfn, shift_to_com=True):
         mol = wfn.molecule()
         natom = mol.natom()
         atoms_list = [(mol.symbol(i),mol.x(i),mol.y(i),mol.z(i)) for i in range(natom)]
         self.add_molecule(atoms_list, bohr=True)
+
 
     def add_molecule(self, atoms_list, bohr=False, shift_to_com=True):
         """
@@ -428,6 +333,104 @@ class Py3JSRenderer():
                                               extent=extent,
                                               opacity=opacity)
                 self.scene.add(mesh)
+
+    def add_cubefiles(self,
+                     cubes,
+                     type='mo',
+                     levels=None,
+                     colors=None,
+                     colorscheme='emory',
+                     opacity=1.0,
+                     sumlevel=0.85,
+                     add_geom=True,
+                     shift_to_com=True,
+                     show_surfaces=False):
+        """
+        Add a cube file (and optionally the molecular geometry) to the scene. This function will automatically select the levels and colors
+        with which to plot the surfaces
+
+        Parameters
+        ----------
+        cubes : dict(str -> CubeFile)
+            The CubeFile objects to load
+        type : str
+            The type of cube files ('mo' or 'density')
+        levels : list(float)
+            The levels to plot (default = None). If not provided, levels will be automatically selected
+            using the compute_levels() function of the CubeFile class. The variable sumlevel is used to
+            select the levels
+        color : list(str)
+            The color of each surface passed as a list of hexadecimal color codes (default = None)
+        colorscheme : str
+            A predefined color scheme (default = 'emory'). Possible options are ['emory', 'national', 'bright', 'electron', 'wow']
+        opacity : float
+            Opacity of the surfaces (default = 1.0)
+        sumlevel : float
+            Cumulative electron density threshold used to find the isosurface levels
+        add_geom : bool
+            Show the molecular geometry (default = True)
+        shift_to_com : bool
+            Shift the molecule so that the center of mass is at the origin (default = True)
+        """
+        if len(cubes) == 0:
+            return
+
+        Xcm, Ycm, Zcm = (0.0, 0.0, 0.0)
+        cube = cubes[list(cubes)[0]]
+        atoms_list = []
+        for Z, xyz in zip(cube.atom_numbers(), cube.atom_coords()):
+            symbol = ATOM_DATA[Z]['symbol']
+            atoms_list.append((symbol, xyz[0], xyz[1], xyz[2]))
+
+        if add_geom:
+            # compute the center of mass
+            self.add_molecule(atoms_list,
+                              bohr=True,
+                              shift_to_com=shift_to_com)
+
+        if shift_to_com:
+            Xcm, Ycm, Zcm = self.__center_of_mass(atoms_list)
+
+        # grab the color scheme
+        if colors == None:
+            colors = self._color_schemes[colorscheme]
+
+        # process the cube files
+        for label, cube in cubes.items():
+            # check if we alredy have this cube file
+            if label in self.cube_meshes:
+                continue
+            # generate a mesh
+            self.cube_meshes[label] = self.__cube_mesh(cube,type,levels,sumlevel,colors,opacity,Xcm, Ycm, Zcm)
+
+        if show_surfaces:
+            self.scene.add(mesh)
+            self.active_cube_meshes.append(mesh)
+
+
+    def __cube_mesh(self,cube,type,levels,sumlevel,colors,opacity,Xcm, Ycm, Zcm):
+        meshes = []
+        # compute the isosurface levels
+        if not levels:
+            levels = cube.compute_levels(type, sumlevel)
+
+        # grab the data and extents, shift to the center of mass automatically
+        data = cube.data()
+        extent = [[cube.min()[0] - Xcm,
+                   cube.max()[0] - Xcm],
+                  [cube.min()[1] - Ycm,
+                   cube.max()[1] - Ycm],
+                  [cube.min()[2] - Zcm,
+                   cube.max()[2] - Zcm]]
+        for level, color in zip(levels, colors):
+            if abs(level) > 1.0e-4:
+                mesh = self.__isosurface_mesh(data,
+                                          level=level,
+                                          color=color,
+                                          extent=extent,
+                                          opacity=opacity)
+                meshes.append(mesh)
+        return meshes
 
     def add_sphere(self, position, radius, color, opacity=1.0):
         """
@@ -1069,4 +1072,3 @@ class Py3JSRenderer():
             Z += mass * z
             M += mass
         return (X / M, Y / M, Z / M)
-
