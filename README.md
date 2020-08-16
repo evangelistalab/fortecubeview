@@ -2,7 +2,7 @@
 
 A simple cube file viewer based on pythreejs.
 
-![psi4cubeview](lib/screenshot.png)
+![psi4cubeview](extra/screenshot.png)
 
 ## Installation
 Using pip:
