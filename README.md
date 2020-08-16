@@ -1,4 +1,4 @@
-# psi4cubeview
+# fortecubeview
 
 A simple cube file viewer based on pythreejs.
 
@@ -29,10 +29,10 @@ jupyter labextension install jupyter-threejs
 ```
 
 ## Getting started
-Check out the example files in the `psi4cubeview/examples` folder.
+Check out the example files in the `fortecubeview/examples` folder.
 From jupyter, the following will load and display all the cube files contained in the currrent working directory
 ```
-    import psi4cubeview
-    psi4cubeview.plot()
+    import fortecubeview
+    fortecubeview.plot()
 ```
 
