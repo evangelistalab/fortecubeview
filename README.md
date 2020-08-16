@@ -2,6 +2,8 @@
 
 A simple cube file viewer based on pythreejs.
 
+![psi4cubeview](lib/screenshot.png)
+
 ## Installation
 Using pip:
 ```
@@ -34,4 +36,3 @@ From jupyter, the following will load and display all the cube files contained i
     psi4cubeview.plot()
 ```
 
-![psi4cubeview](lib/screenshot.png)
