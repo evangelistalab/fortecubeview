@@ -1,1 +1,1 @@
-from .psi4cubeview import *
+from .psi4cubeview import plot, colorschemes
