@@ -4,14 +4,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="psi4cubeview-fevangelista",
+    name="fortecubeview-fevangelista",
     version="0.1.0",
     author="Francesco Evangelista",
     author_email="",
     description="A cube file viewer for Psi4 and Forte",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/evangelistalab/psi4cubeview",
+    url="https://github.com/evangelistalab/fortecubeview",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
