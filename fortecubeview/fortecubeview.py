@@ -64,7 +64,7 @@ def plot(path='.',
         sumlevel=sumlevel,
     )
 
-def vib(file,
+def vib(filename,
         path='.',
         width=400,
         height=400,
@@ -105,7 +105,7 @@ def vib(file,
         show the name of the cube file under the plot? (default = True)
     """
     return VibViewer(
-        file=file,
+        filename=filename,
         path=path,
         width=width,
         height=height,
