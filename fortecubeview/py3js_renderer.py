@@ -478,26 +478,6 @@ class Py3JSRenderer():
                 arrow_meshes = self.__get_arrow_mesh(xyz1,xyz2,'#e60000',radius_small=0.25,radius_large=0.5)
                 for mesh in arrow_meshes:
                     meshes.append(mesh)
-#        # compute the isosurface levels
-#        if not levels:
-#            levels = cube.compute_levels(type, sumlevel)
-
-#        # grab the data and extents, shift to the center of mass automatically
-#        data = cube.data()
-#        extent = [[cube.min()[0] - Xcm,
-#                   cube.max()[0] - Xcm],
-#                  [cube.min()[1] - Ycm,
-#                   cube.max()[1] - Ycm],
-#                  [cube.min()[2] - Zcm,
-#                   cube.max()[2] - Zcm]]
-#        for level, color in zip(levels, colors):
-#            if abs(level) > 1.0e-5:
-#                mesh = self.__isosurface_mesh(data,
-#                                              level=level,
-#                                              color=color,
-#                                              extent=extent,
-#                                              opacity=opacity)
-#                meshes.append(mesh)
         return meshes
 
     def add_sphere(self, position, radius, color, opacity=1.0):

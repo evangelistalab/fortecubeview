@@ -71,11 +71,15 @@ class VibViewer():
 
         sorted_labels = []
         for k, freq in enumerate(data['frequencies']):
-            if freq < 0.0:
-                str = f"i{-freq:6.1f}"
+            if freq < -25.0:
+                str = f"{k + 1}: Imaginary mode (i{-freq:.1f} cm^-1)"
+            elif -25.0 <= freq < 0.0:
+                str = f"{k + 1}: Near-zero imaginary mode (i{-freq:.1f} cm^-1)"
+            elif 0.0 <= freq < 50.0:
+                str = f"{k + 1}: Near-zero normal mode ({freq:.1f} cm^-1)"
             else:
-                str = f"{freq:6.1f}"
-            sorted_labels.append(f'Normal mode {k + 1} ({str} cm^-1)')
+                str = f"{k + 1}: Normal mode ({freq:.1f} cm^-1)"
+            sorted_labels.append(str)
         labels_to_modes = {}
         for k, label in enumerate(sorted_labels):
             labels_to_modes[label] = k
