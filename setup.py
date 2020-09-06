@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="fortecubeview-fevangelista",
-    version="0.1.0",
+    name="fortecubeview",
+    version="0.1.1",
     author="Francesco Evangelista",
     author_email="",
     description="A cube file viewer for Psi4 and Forte",
