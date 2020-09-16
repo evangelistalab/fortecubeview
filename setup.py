@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="fortecubeview",
-    version="0.1.1",
+    version="0.2.1",
     author="Francesco Evangelista",
     author_email="",
-    description="A cube file viewer for Psi4 and Forte",
+    description="A geometry, cube file, and vibrational modes viewer for Psi4 and Forte",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/evangelistalab/fortecubeview",

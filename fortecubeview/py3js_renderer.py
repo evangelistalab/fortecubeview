@@ -756,7 +756,7 @@ class Py3JSRenderer():
         """
         if symbol in self.atom_geometries:
             return self.atom_geometries[symbol]
-        atom_data = ATOM_DATA[ATOM_SYMBOL_TO_Z[symbol]]
+        atom_data = ATOM_DATA[ATOM_SYMBOL_TO_Z[symbol.upper()]]
         radius_covalent = atom_data['radius_covalent'] * self.angtobohr
         geometry = SphereGeometry(radius=self.atom_size * radius_covalent,
                                   widthSegments=24,
@@ -777,7 +777,7 @@ class Py3JSRenderer():
         """
         if symbol in self.atom_materials:
             return self.atom_materials[symbol]
-        atom_data = ATOM_DATA[ATOM_SYMBOL_TO_Z[symbol]]
+        atom_data = ATOM_DATA[ATOM_SYMBOL_TO_Z[symbol.upper()]]
         color = 'rgb({0[0]},{0[1]},{0[2]})'.format(atom_data['color'])
         #        material = MeshPhongMaterial(color=color, shininess=shininess)
         material = MeshStandardMaterial(color=color,
@@ -808,9 +808,9 @@ class Py3JSRenderer():
         symbol2, x2, y2, z2 = atom2_info
         d = sqrt((x1 - x2)**2 + (y1 - y2)**2 + (z1 - z2)**2)
         radius_covalent1 = ATOM_DATA[
-            ATOM_SYMBOL_TO_Z[symbol1]]['radius_covalent']
+            ATOM_SYMBOL_TO_Z[symbol1.upper()]]['radius_covalent']
         radius_covalent2 = ATOM_DATA[
-            ATOM_SYMBOL_TO_Z[symbol2]]['radius_covalent']
+            ATOM_SYMBOL_TO_Z[symbol2.upper()]]['radius_covalent']
 
         bond_cutoff = self.bond_cutoff(radius_covalent1, radius_covalent2)
         if d > bond_cutoff:
@@ -1154,7 +1154,7 @@ class Py3JSRenderer():
         Z = 0.0
         M = 0.0
         for (symbol, x, y, z) in atoms_list:
-            mass = ATOM_DATA[ATOM_SYMBOL_TO_Z[symbol]]['mass']
+            mass = ATOM_DATA[ATOM_SYMBOL_TO_Z[symbol.upper()]]['mass']
             X += mass * x
             Y += mass * y
             Z += mass * z

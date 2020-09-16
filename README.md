@@ -2,7 +2,7 @@
 
 A simple cube file viewer based on pythreejs.
 
-![psi4cubeview](extra/screenshot.png)
+![fortecubeview](extra/screenshot.png)
 
 ## Installation
 Using pip:
@@ -11,7 +11,7 @@ pip install fortecubeview
 ```
 
 ## Dependencies
-psi4cubeview requires [pythreejs](https://github.com/jupyter-widgets/pythreejs).
+forte4cubeview requires [pythreejs](https://github.com/jupyter-widgets/pythreejs).
 
 To install pythreejs via pip:
 ```
