@@ -1,9 +1,32 @@
 from .cube_viewer import *
 from .vib_viewer import *
+from .mol_viewer import *
 
 # The allowed color schemes
 colorschemes = ['emory', 'national', 'bright', 'electron', 'wow']
 
+def geom(xyz = None,
+         molecule = None,
+         width=400,
+         height=400):
+    """
+    A simple widget for render a psi4 molecule object.
+
+    Parameters
+    ----------
+    xyz : Molecule
+        A psi4 Molecule object to render
+    width : int
+        the width of the plot in pixels (default = 400)
+    height : int
+        the height of the plot in pixels (default = 400)
+    """
+    return MolViewer(
+        xyz=xyz,
+        molecule=molecule,
+        width=width,
+        height=height,
+    )
 
 def plot(path='.',
          cubes=None,

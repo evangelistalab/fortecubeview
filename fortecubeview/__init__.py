@@ -1,2 +1,2 @@
-from .fortecubeview import plot, vib, colorschemes
+from .fortecubeview import plot, vib, colorschemes, geom
 
