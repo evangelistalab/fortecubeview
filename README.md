@@ -7,7 +7,7 @@ A simple cube file viewer based on pythreejs.
 ## Installation
 Using pip:
 ```
-pip install psi4cubeview
+pip install fortecubeview
 ```
 
 ## Dependencies
