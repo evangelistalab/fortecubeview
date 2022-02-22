@@ -11,12 +11,19 @@ pip install fortecubeview
 ```
 
 ## Dependencies
-forte4cubeview requires [pythreejs](https://github.com/jupyter-widgets/pythreejs).
+forte4cubeview requires [pythreejs](https://github.com/jupyter-widgets/pythreejs) and [scikit-image](https://github.com/scikit-image/scikit-image).
 
 To install pythreejs via pip:
 ```
 pip install pythreejs
 ```
+
+To install pythreejs via conda:
+```
+conda install -c conda-forge pythreejs
+conda install nodejs -c conda-forge --repodata-fn=repodata.json
+```
+
 And then install the extension for jupyter notebooks
 ```
 jupyter nbextension install --py --symlink --sys-prefix pythreejs

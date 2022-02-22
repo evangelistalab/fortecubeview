@@ -1,1 +1,2 @@
 pythreejs
+scikit-image
