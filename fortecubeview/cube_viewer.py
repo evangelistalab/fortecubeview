@@ -260,12 +260,14 @@ class CubeViewer():
             elif m2:
                 if m2.groups()[0] == 'a':
                     label = 'Density (alpha)'
-                if m2.groups()[0] == 'b':
+                elif m2.groups()[0] == 'b':
                     label = 'Density (beta)'
-                if m2.groups()[0] == 's':
+                elif m2.groups()[0] == 's':
                     label = 'Density (spin)'
-                if m2.groups()[0] == 't':
+                elif m2.groups()[0] == 't':
                     label = 'Density (total)'
+                else:
+                    label = key
             else:
                 label = key
             labels_to_filename[label] = key
