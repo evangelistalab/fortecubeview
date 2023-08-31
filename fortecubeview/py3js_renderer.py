@@ -287,9 +287,9 @@ class Py3JSRenderer():
 
         # Add the bonds
         for i in range(len(atoms_list)):
-            atom1 = atoms_list[i]
+            atom1 = (atoms_list[i][0], atoms_list[i][1] - Xcm, atoms_list[i][2] - Ycm, atoms_list[i][3] - Zcm)
             for j in range(i + 1, len(atoms_list)):
-                atom2 = atoms_list[j]
+                atom2 = (atoms_list[j][0], atoms_list[j][1] - Xcm, atoms_list[j][2] - Ycm, atoms_list[j][3] - Zcm)
                 bond = self.__get_bond_mesh(atom1, atom2)
                 if bond:
                     self.scene.add(bond)
