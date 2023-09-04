@@ -85,6 +85,8 @@ class Py3JSRenderer():
         Add a plane
     def add_box(position,width,height,depth,color,opacity=1.0,normal=(0, 0, 1))
         Add a box
+    def set_levels(atoms_list,levels_list)
+        Add energy levels to print (using a color scale) for each atom
     """
     def __init__(self, width=400, height=400):
         """
@@ -107,6 +109,7 @@ class Py3JSRenderer():
         self.atom_size = 0.5  # scaling factor for atom geometry
         self.atom_geometries = {}
         self.atom_materials = {}
+        self.atom_levels = []
         self.bond_materials = {}
         self.bond_geometry = None
         # cubefile meshes
@@ -200,6 +203,28 @@ class Py3JSRenderer():
                       for i in range(natom)]
         self.add_molecule(atoms_list, bohr=True)
 
+    def set_levels(self, levels_list):
+        """
+        Set color levels for each atom
+
+        Parameters
+        ----------
+        levels_list : list(float)
+            A list of energy contribution values for each atom
+        """
+        self.atom_levels = levels_list[:]
+
+    def set_erange(self, erange):
+        """
+        Set energy range for color saturation PDB plot
+
+        Parameters
+        ----------
+        erange : float
+            Maximum |energy| to plot (corresponds to full color saturation)
+        """
+        self.erange = erange
+
     def add_molecule(self, atoms_list, bohr=False, shift_to_com=True):
         """
         Add a molecular geometry to the scene. The geometry is given as a list of atoms
@@ -237,20 +262,34 @@ class Py3JSRenderer():
             Xcm, Ycm, Zcm = (0.0, 0.0, 0.0)
 
         atom_positions = collections.defaultdict(list)
-        for symbol, x, y, z in atoms_list:
-            atom_positions[symbol].append([x - Xcm, y - Ycm, z - Zcm])
+        if self.atom_levels == []:
+            for symbol, x, y, z in atoms_list:
+                atom_positions[symbol].append([x - Xcm, y - Ycm, z - Zcm])
+            
         # Then add the unique atoms at all the positions
-        for atom_type in atom_positions:
-            atom_mesh = self.__get_atom_mesh((atom_type, 0.0, 0.0, 0.0))
-            clone_geom = CloneArray(original=atom_mesh,
-                                    positions=atom_positions[atom_type])
-            self.scene.add(clone_geom)
+            for atom_type in atom_positions:
+                atom_mesh = self.__get_atom_mesh((atom_type, 0.0, 0.0, 0.0))
+                clone_geom = CloneArray(original=atom_mesh,
+                                        positions=atom_positions[atom_type])
+                self.scene.add(clone_geom)
+        else:
+            for ((symbol, x, y, z), energy) in zip(atoms_list,self.atom_levels):
+                atom_positions[symbol].append([x - Xcm, y - Ycm, z - Zcm, energy])
+            
+        # Then add the unique atoms at all the positions
+            for atom_type in atom_positions:
+                for atom in atom_positions[atom_type]:
+                    energy = atom[3]
+                    atom_mesh = self.__get_atom_mesh_color_by_energy((atom_type, 0.0, 0.0, 0.0), energy)
+                    clone_geom = CloneArray(original=atom_mesh,
+                                            positions=[atom[:3]])
+                    self.scene.add(clone_geom)
 
         # Add the bonds
         for i in range(len(atoms_list)):
-            atom1 = atoms_list[i]
+            atom1 = (atoms_list[i][0], atoms_list[i][1] - Xcm, atoms_list[i][2] - Ycm, atoms_list[i][3] - Zcm)
             for j in range(i + 1, len(atoms_list)):
-                atom2 = atoms_list[j]
+                atom2 = (atoms_list[j][0], atoms_list[j][1] - Xcm, atoms_list[j][2] - Ycm, atoms_list[j][3] - Zcm)
                 bond = self.__get_bond_mesh(atom1, atom2)
                 if bond:
                     self.scene.add(bond)
@@ -743,6 +782,24 @@ class Py3JSRenderer():
         mesh = Mesh(geometry=geometry, material=material, position=[x, y, z])
         return mesh
 
+    def __get_atom_mesh_color_by_energy(self, atom_info, energy):
+        """
+        This function returns a Mesh object (Geometry + Material) that represents an atom
+
+        Parameters
+        ----------
+        atom_info : tuple(str, float, float, float)
+            A tuple containing the atomic symbol and coordinates of the atom using the format
+            (atomic symbol , x, y, z)
+        energy : float
+            The energy contribution for this atom (determines atom color)
+        """
+        symbol, x, y, z = atom_info
+        geometry = self.__get_atom_geometry(symbol)
+        material = self.__set_atom_material(energy)
+        mesh = Mesh(geometry=geometry, material=material, position=[x, y, z])
+        return mesh
+
     def __get_atom_geometry(self, symbol, shininess=75):
         """
         This function returns a sphere geometry object with radius proportional to the covalent atomic radius
@@ -784,6 +841,34 @@ class Py3JSRenderer():
                                         roughness=0.25,
                                         metalness=0.1)
         self.atom_materials[symbol] = material
+        return material
+
+    def __set_atom_material(self, energy):
+        """
+        This function returns a Material object based on energy level
+
+        Parameters
+        ----------
+        energy : float
+            The energy to plot for this atom (by color)
+        """
+        erange = self.erange
+        colormin = [255, 0, 0]
+        colormax = [0, 0, 255]
+        white = [255, 255, 255]
+        thiscolor = 3*[0]
+        saturation = abs(energy / erange)
+        if saturation > 1.0: saturation = 1.0
+        if energy < 0:
+            for i in range(3):
+                thiscolor[i] = int(saturation * colormin[i] + (1.0 - saturation) * white[i])
+        else:
+            for i in range(3):
+                thiscolor[i] = int(saturation * colormax[i] + (1.0 - saturation) * white[i])
+        color = 'rgb({0[0]},{0[1]},{0[2]})'.format(thiscolor)
+        material = MeshStandardMaterial(color=color,
+                                        roughness=0.25,
+                                        metalness=0.1)
         return material
 
     def __get_bond_mesh(self, atom1_info, atom2_info, radius=None):

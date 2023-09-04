@@ -28,6 +28,32 @@ def geom(xyz = None,
         height=height,
     )
 
+def showpdb(pdb = None,
+         erange = 10.0,
+         width=400,
+         height=400):
+    """
+    A widget for rendering a psi4/fsapt PDB object.
+
+    Parameters
+    ----------
+    pdb : filename
+        A psi4 PDB file to render
+    erange : float
+        Range of displayed energy values. Values >= |erange| are given
+        maximum color saturation.
+    width : int
+        the width of the plot in pixels (default = 400)
+    height : int
+        the height of the plot in pixels (default = 400)
+    """
+    return PDBViewer(
+        pdb=pdb,
+        erange=erange,
+        width=width,
+        height=height,
+    )
+
 def plot(path='.',
          cubes=None,
          width=400,
